@@ -32,6 +32,9 @@ public class Idea {
 
     private String createdBy; // username from JWT
 
+    @Column(length = 2000)
+    private String aiConclusion; // Optional field for AI-generated conclusion
+
     public Idea() {}
 
     public Idea(String topic, String summary, String explanation, String references, String proofs, List<String> tags) {
@@ -66,4 +69,7 @@ public class Idea {
 
     public String getCreatedBy() { return createdBy; }
     public void setCreatedBy(String createdBy) { this.createdBy = createdBy; }
+
+    public String getAiConclusion() { return aiConclusion; }   // <-- NEW GETTER
+    public void setAiConclusion(String aiConclusion) { this.aiConclusion = aiConclusion; } // <-- NEW SETTER
 }
