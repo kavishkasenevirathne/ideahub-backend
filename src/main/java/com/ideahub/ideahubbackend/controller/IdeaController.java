@@ -2,6 +2,7 @@ package com.ideahub.ideahubbackend.controller;
 
 import com.ideahub.ideahubbackend.model.Idea;
 import com.ideahub.ideahubbackend.service.IdeaService;
+import com.ideahub.ideahubbackend.service.AiService;
 import com.ideahub.ideahubbackend.security.JwtUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -16,8 +17,10 @@ public class IdeaController {
 
     private final IdeaService ideaService;
     private final JwtUtil jwtUtil;
+    private final AiService aiService;
 
-    public IdeaController(IdeaService ideaService, JwtUtil jwtUtil) {
+    public IdeaController(IdeaService ideaService, JwtUtil jwtUtil, AiService aiService) {
+        this.aiService = aiService;
         this.ideaService = ideaService;
         this.jwtUtil = jwtUtil;
     }
@@ -31,6 +34,18 @@ public class IdeaController {
 
         // Set createdBy field
         idea.setCreatedBy(username);
+
+        // Generate AI conclusion before saving
+        try {
+            String aiConclusion = aiService.generateConclusion(
+                    idea.getTopic(),
+                    idea.getSummary(),
+                    idea.getExplanation()
+            );
+            idea.setAiConclusion(aiConclusion);
+        } catch (Exception e) {
+            idea.setAiConclusion("AI analysis unavailable (quota exceeded).");
+        }
 
         Idea savedIdea = ideaService.saveIdea(idea);
         return ResponseEntity.ok(savedIdea);
