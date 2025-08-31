@@ -2,6 +2,8 @@ package com.ideahub.ideahubbackend.controller;
 
 import com.ideahub.ideahubbackend.model.Idea;
 import com.ideahub.ideahubbackend.service.IdeaService;
+import com.ideahub.ideahubbackend.model.Comment;
+import com.ideahub.ideahubbackend.service.CommentService;
 import com.ideahub.ideahubbackend.service.AiService;
 import com.ideahub.ideahubbackend.security.JwtUtil;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +20,12 @@ public class IdeaController {
     private final IdeaService ideaService;
     private final JwtUtil jwtUtil;
     private final AiService aiService;
+    private final CommentService commentService;
 
-    public IdeaController(IdeaService ideaService, JwtUtil jwtUtil, AiService aiService) {
+    public IdeaController(IdeaService ideaService, JwtUtil jwtUtil, AiService aiService, CommentService commentService) {
         this.aiService = aiService;
         this.ideaService = ideaService;
+        this.commentService = commentService;
         this.jwtUtil = jwtUtil;
     }
 
@@ -61,6 +65,37 @@ public class IdeaController {
         Idea idea = ideaService.getIdeaById(id);
         return idea != null ? ResponseEntity.ok(idea) : ResponseEntity.notFound().build();
     }
+
+    //  Update Idea
+    @PutMapping("/{id}")
+    public ResponseEntity<Idea> updateIdea(@PathVariable Long id, @RequestBody Idea updatedIdea) {
+        Idea idea = ideaService.updateIdea(id, updatedIdea);
+        return idea != null ? ResponseEntity.ok(idea) : ResponseEntity.notFound().build();
+    }
+
+    //  Delete Idea
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteIdea(@PathVariable Long id) {
+        boolean deleted = ideaService.deleteIdea(id);
+        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
+
+    //  Add Comment
+    @PostMapping("/{id}/comments")
+    public ResponseEntity<Comment> addComment(@PathVariable Long id, @RequestBody Comment comment) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        comment.setCreatedBy(auth.getName());
+        Comment savedComment = commentService.addComment(id, comment);
+        return ResponseEntity.ok(savedComment);
+    }
+
+    //  Get Comments for an Idea
+    @GetMapping("/{id}/comments")
+    public List<Comment> getComments(@PathVariable Long id) {
+        return commentService.getCommentsByIdea(id);
+    }
 }
+
+
 
 

@@ -2,6 +2,7 @@ package com.ideahub.ideahubbackend.model;
 
 import jakarta.persistence.*;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name = "ideas")
@@ -34,6 +35,10 @@ public class Idea {
 
     @Column(length = 2000)
     private String aiConclusion; // Optional field for AI-generated conclusion
+
+    @OneToMany(mappedBy = "idea", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Comment> comments;
 
     public Idea() {}
 
@@ -72,4 +77,7 @@ public class Idea {
 
     public String getAiConclusion() { return aiConclusion; }   // <-- NEW GETTER
     public void setAiConclusion(String aiConclusion) { this.aiConclusion = aiConclusion; } // <-- NEW SETTER
+
+    public List<Comment> getComments() { return comments; }
+    public void setComments(List<Comment> comments) { this.comments = comments; }
 }
