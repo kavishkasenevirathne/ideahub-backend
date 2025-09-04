@@ -26,8 +26,11 @@ public class IdeaService {
         return ideaRepository.findById(id).orElse(null);
     }
 
-    public Idea updateIdea(Long id, Idea updatedIdea) {
+    public Idea updateIdea(Long id, Idea updatedIdea, String username) {
         return ideaRepository.findById(id).map(existingIdea -> {
+            if (!existingIdea.getCreatedBy().equals(username)) {
+                throw new RuntimeException("Unauthorized to update this idea");
+            }
             existingIdea.setTopic(updatedIdea.getTopic());
             existingIdea.setSummary(updatedIdea.getSummary());
             existingIdea.setExplanation(updatedIdea.getExplanation());
@@ -38,12 +41,14 @@ public class IdeaService {
         }).orElse(null);
     }
 
-    public boolean deleteIdea(Long id) {
-        if (ideaRepository.existsById(id)) {
-            ideaRepository.deleteById(id);
+    public boolean deleteIdea(Long id, String username) {
+        return ideaRepository.findById(id).map(existingIdea -> {
+            if (!existingIdea.getCreatedBy().equals(username)) {
+                throw new RuntimeException("You are not authorized to delete this idea");
+            }
+            ideaRepository.delete(existingIdea);
             return true;
-        }
-        return false;
+        }).orElse(false);
     }
 }
 

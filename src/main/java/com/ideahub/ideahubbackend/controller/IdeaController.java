@@ -69,15 +69,27 @@ public class IdeaController {
     //  Update Idea
     @PutMapping("/{id}")
     public ResponseEntity<Idea> updateIdea(@PathVariable Long id, @RequestBody Idea updatedIdea) {
-        Idea idea = ideaService.updateIdea(id, updatedIdea);
-        return idea != null ? ResponseEntity.ok(idea) : ResponseEntity.notFound().build();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        try {
+            Idea idea = ideaService.updateIdea(id, updatedIdea, username);
+            return idea != null ? ResponseEntity.ok(idea) : ResponseEntity.notFound().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(403).build(); // Forbidden
+        }
     }
 
     //  Delete Idea
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteIdea(@PathVariable Long id) {
-        boolean deleted = ideaService.deleteIdea(id);
-        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName(); // Logged-in user
+        try {
+            boolean deleted = ideaService.deleteIdea(id, username);
+            return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(403).build(); // Forbidden
+        }
     }
 
     //  Add Comment
